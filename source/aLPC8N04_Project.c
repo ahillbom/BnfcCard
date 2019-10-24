@@ -1,66 +1,76 @@
-/*
- * Copyright 2016-2019 NXP
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * o Redistributions of source code must retain the above copyright notice, this list
- *   of conditions and the following disclaimer.
- *
- * o Redistributions in binary form must reproduce the above copyright notice, this
- *   list of conditions and the following disclaimer in the documentation and/or
- *   other materials provided with the distribution.
- *
- * o Neither the name of NXP Semiconductor, Inc. nor the names of its
- *   contributors may be used to endorse or promote products derived from this
- *   software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
- 
-/**
- * @file    aLPC8N04_Project.c
- * @brief   Application entry point.
- */
 #include <stdio.h>
-#include "board.h"
-#include "peripherals.h"
-#include "pin_mux.h"
-#include "clock_config.h"
 #include "LPC8N04.h"
-/* TODO: insert other include files here. */
 
-/* TODO: insert other definitions and declarations here. */
+typedef struct
+{
+	uint8_t row;
+	uint8_t col;
+} led_pin_mux_t;
 
-/*
- * @brief   Application entry point.
- */
-int main(void) {
-  	/* Init board hardware. */
-    BOARD_InitBootPins();
-    BOARD_InitBootClocks();
-    BOARD_InitBootPeripherals();
+const uint8_t pin_led_rows[] = {1, 2};
+const uint8_t pin_led_cols[] = {6, 8, 9, 7, 3};
+const uint8_t pin_buf = 0;
 
-    printf("Hello World\n");
+const led_pin_mux_t led_pin_mux[] = {
+	{2, 1}, //D6
+	{2, 2}, //D7
+	{2, 3}, //D8
+	{2, 4}, //D9
+	{1, 5}, //D5
+	{1, 4}, //D4
+	{1, 3}, //D3
+	{1, 2}, //D2
+	{1, 1}  //D1
+};
 
-    /* Force the counter to be placed into memory. */
-    volatile static int i = 0 ;
-    /* Enter an infinite loop, just incrementing a counter. */
-    while(1) {
-        i++ ;
-        /* 'Dummy' NOP to allow source level single stepping of
-            tight while() loop */
-        __asm volatile ("nop");
+void conf_pins()
+{
+
+}
+
+void Delay(void)
+{
+    volatile uint32_t i = 0;
+    for (i = 0; i < 80000; ++i)
+    {
+        __asm("NOP"); /* delay */
     }
-    return 0 ;
+}
+
+
+int main(void) {
+	//Enable IOCON clock
+	SYSCON->SYSAHBCLKCTRL |= SYSCON_SYSAHBCLKCTRL_IOCON(1);
+	//enable GPIO clock
+	SYSCON->SYSAHBCLKCTRL |= SYSCON_SYSAHBCLKCTRL_GPIO(1);
+
+	// Divide clock by 8 Mhz / 16 => 500KHz
+    SYSCON->SYSCLKUEN = 0;
+    SYSCON->SYSCLKCTRL |= SYSCON_SYSCLKCTRL_SYSCLKDIV(4U);
+    SYSCON->SYSCLKUEN = 0;
+    SYSCON->SYSCLKUEN = 1;
+
+    // SPI/SSP clock divider => 0
+	SYSCON->SSPCLKDIV |= SYSCON_SSPCLKDIV_DIV(0);
+	// WDT clock source => System FRO
+	SYSCON->WDTCLKSEL |= SYSCON_WDTCLKSEL_SEL(0);
+	// Watchdog timer clock divider => 0
+	SYSCON->WDTCLKDIV|= SYSCON_WDTCLKDIV_DIV(0);
+	// Disable clockout on the pin
+	SYSCON->CLKOUTEN |= SYSCON_CLKOUTEN_CLKOUTEN(0);
+
+	IOCON->PIO[0][2] = IOCON_PIO_FUNC(0);
+	IOCON->PIO[0][4] = IOCON_PIO_FUNC(0);
+
+	GPIO->DIR |= 1U << 2;
+
+	GPIO->DIR |= 1U << 4;
+
+	GPIO->GPIODATA[1 << 2] = (1 << 2);
+	GPIO->GPIODATA[1 << 4] = (0 << 4);
+
+	while(1)
+	{
+		Delay();
+	}
 }

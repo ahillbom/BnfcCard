@@ -42,7 +42,9 @@
  */
 
 #include <stdint.h>
-#include "fsl_device_registers.h"
+#include "LPC8N04.h"
+#include "system_LPC8N04.h"
+
 
 extern uint32_t g_Fro_Osc_Freq;
 extern uint32_t g_LP_Osc_Freq;
