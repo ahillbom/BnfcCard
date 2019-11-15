@@ -181,8 +181,8 @@ int main(void) {
     url_t url = {   {URL_BASE},
                     {0}};
 
-    utils_word_to_hex(uid[0], &url.id[0]);
-    utils_word_to_hex(uid[1], &url.id[8]);
+    utils_word_to_hex(uid[0], &url.id[8]);
+    utils_word_to_hex(uid[1], &url.id[0]);
 
     // Buffer for binary NDEF message
     uint8_t msg[80] = {};
