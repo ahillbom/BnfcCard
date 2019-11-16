@@ -4,16 +4,20 @@
 #include "nfc_ndef.h"
 #include "IAP.h"
 #include "utils.h"
+#include "gitversion.h"
 
 #define LED_ROWS  2
 #define LED_COLS  5
 #define LEDS 9
 
-#define URL_BASE  "beastdevices.com/nfccodes/25YDZ2SCIP/?id="
+#define URL_BASE      "beastdevices.com/nfccodes/25YDZ2SCIP/?id="
+#define URL_PAR_VER   "&v="
 
 typedef struct{
     uint8_t base[sizeof(URL_BASE)-1];
     uint8_t id[16];
+    uint8_t par_ver[3];
+    uint8_t ver[40];
 }url_t;
 
 uint32_t SystemClock;
@@ -41,10 +45,12 @@ uint8_t led_buf[LED_ROWS][LED_COLS] = { {0,0,0,0,0},{0,0,0,0,0} };
 uint8_t led_prebuf_w = 0;
 
 //Pointer to the active LED buffer for linear access instead or row and columns
-uint8_t (*led_prebuf_lin)[LED_ROWS*LED_COLS] = (uint8_t(*)[LED_ROWS][LED_COLS])led_prebuf;
+uint8_t (*led_prebuf_lin)[LED_ROWS*LED_COLS] = (uint8_t(*)[LED_ROWS*LED_COLS])led_prebuf;
 
 // MCU's serial number
 uint32_t uid[2] = {0};
+
+uint32_t uptime = 0;
 
 const uint8_t led_animation[][LEDS] = { {0, 0, 0, 0, 1, 0, 0, 0, 0},
                                         {0, 0, 0, 1, 0, 1, 0, 0, 0},
@@ -96,6 +102,7 @@ void NFC_write(uint32_t pageIndex, const uint32_t *data, uint32_t numPage)
 void SysTick_Handler(void)
 {
     LED_refresh();
+    uptime++;
 }
 
 void NFC_IRQHandler(void)
@@ -179,7 +186,7 @@ int main(void) {
 
     // Prepare NDEF message
     url_t url = {   {URL_BASE},
-                    {0}};
+                    {0}, {URL_PAR_VER}, {GIT_VERSION}};
 
     utils_word_to_hex(uid[0], &url.id[8]);
     utils_word_to_hex(uid[1], &url.id[0]);
