@@ -3,7 +3,7 @@ A smart business card based on ARM Cortex M0 with integrated NFC. The business c
 
 It uses NXP LPC8N04, and features nine 0.4 mm slim orange LEDs for the light show and feedback. The MCU itself consumes only 900uA at 8MHz and 200uA at 1MHz. Given that NFC readers provide power continuously, there are many application that could be implemented on the business card. I haven't came up with anything fancy yet, except for hooking up I2C sensors, and using LEDs and time interval that card is held against the NFC reader to change the mode of operation. 
 
-Follow the whole project on [hackaday.io](https://hackaday.io/project/168099-beast-nfc-business-card)
+Follow the whole project on [hackaday.io](https://hackaday.io/project/168099-beast-nfc-business-card) or my [blog](https://beastdevices.com/?p=666)
 
 # NFC NDEF library
 
@@ -27,8 +27,8 @@ ndef_msg_rtd_text(url, sizeof(url), msg, &msglen);
 
 NXP LPC8N04 has a unique 64-bit serial number which is possible to read through their IAP (In Application Programming) interface. A function for reading UID is implemented [here](/device/IAP.c).
 
-The UID is dynamically added to the URL as a `id` parameter and copied to the NFC front-end buffer memory in [main.c](/source/main.c)
-This exmaple summarizes it:
+The UID is dynamically added to the URL as an `id` parameter and copied to the NFC front-end buffer memory in [main.c](/source/main.c)
+This example summarizes it:
 ```c
 #define URL_BASE  "beastdevices.com/nfccodes/25YDZ2SCIP/?id="
 
